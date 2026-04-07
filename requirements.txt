@@ -1,0 +1,4 @@
+# Islam AI Tool - Dependencies
+# No external dependencies required for the core tool.
+# Optional: uncomment below if you want to use the OpenAI-compatible API mode.
+# openai>=1.0.0
