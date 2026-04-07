@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Islam AI - Islamic Knowledge Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>&#xFDFD;</h1>
+                <h2>Islam AI</h2>
+                <p class="subtitle">Islamic Knowledge Assistant</p>
+                <p class="bismillah">Bismillahir Rahmanir Raheem</p>
+            </div>
+        </header>
+
+        <div class="topics-bar">
+            <button class="topic-btn" data-query="five pillars of Islam">Pillars</button>
+            <button class="topic-btn" data-query="daily prayers">Salah</button>
+            <button class="topic-btn" data-query="quran verses">Quran</button>
+            <button class="topic-btn" data-query="hadith">Hadith</button>
+            <button class="topic-btn" data-query="duas supplications">Duas</button>
+            <button class="topic-btn" data-query="faith iman">Faith</button>
+            <button class="topic-btn" data-query="prophets">Prophets</button>
+            <button class="topic-btn" data-query="ramadan fasting">Ramadan</button>
+            <button class="topic-btn" data-query="islamic months">Calendar</button>
+            <button class="topic-btn" data-query="charity zakat">Zakat</button>
+            <button class="topic-btn" data-query="hajj pilgrimage">Hajj</button>
+            <button class="topic-btn" data-query="patience sabr">Patience</button>
+        </div>
+
+        <div class="search-box">
+            <form id="ask-form">
+                <input
+                    type="text"
+                    id="question"
+                    placeholder="Ask about Islam... e.g. 'What are the five pillars?'"
+                    autocomplete="off"
+                >
+                <button type="submit" id="ask-btn">Ask</button>
+            </form>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Searching knowledge...</p>
+        </div>
+
+        <div id="results" class="results"></div>
+
+        <div id="welcome" class="welcome">
+            <div class="welcome-icon">&#x1F54C;</div>
+            <h3>Assalamu Alaikum!</h3>
+            <p>Welcome to Islam AI. Ask a question or tap a topic above to learn about Islam.</p>
+            <div class="welcome-suggestions">
+                <p><strong>Try asking:</strong></p>
+                <ul>
+                    <li>"What are the five pillars of Islam?"</li>
+                    <li>"Tell me about daily prayers"</li>
+                    <li>"Show me Quran verses about patience"</li>
+                    <li>"Hadith about kindness"</li>
+                    <li>"Common duas"</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>Islam AI - For educational purposes. Always refer to qualified scholars for religious guidance.</p>
+        </footer>
+    </div>
+
+    <script>
+        const form = document.getElementById('ask-form');
+        const input = document.getElementById('question');
+        const results = document.getElementById('results');
+        const loading = document.getElementById('loading');
+        const welcome = document.getElementById('welcome');
+        const topicBtns = document.querySelectorAll('.topic-btn');
+
+        topicBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                input.value = btn.dataset.query;
+                form.dispatchEvent(new Event('submit'));
+            });
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = input.value.trim();
+            if (!question) return;
+
+            welcome.classList.add('hidden');
+            results.innerHTML = '';
+            loading.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question }),
+                });
+                const data = await res.json();
+                renderResults(data);
+            } catch (err) {
+                results.innerHTML = '<div class="error">Something went wrong. Please try again.</div>';
+            } finally {
+                loading.classList.add('hidden');
+            }
+        });
+
+        function renderResults(data) {
+            if (!data.sections || data.sections.length === 0) {
+                results.innerHTML = '<div class="no-results">No results found. Try a different question.</div>';
+                return;
+            }
+
+            let html = '';
+
+            if (data.fallback) {
+                html += '<div class="fallback-note">I couldn\'t find that specific topic, but here is some beneficial knowledge:</div>';
+            }
+
+            data.sections.forEach(section => {
+                html += `<div class="section">`;
+                html += `<h3 class="section-title">${section.title}</h3>`;
+
+                if (section.type === 'pillars' || section.type === 'faith') {
+                    section.items.forEach(item => {
+                        html += `<div class="card">`;
+                        html += `<div class="card-header">`;
+                        html += `<strong>${item.name}</strong>`;
+                        if (item.arabic) html += ` <span class="arabic">${item.arabic}</span>`;
+                        html += `</div>`;
+                        html += `<p>${item.description}</p>`;
+                        if (item.details) html += `<p class="details">${item.details}</p>`;
+                        html += `</div>`;
+                    });
+                }
+
+                else if (section.type === 'prayers') {
+                    section.items.forEach(item => {
+                        html += `<div class="card prayer-card">`;
+                        html += `<div class="card-header">`;
+                        html += `<strong>${item.name}</strong> <span class="arabic">${item.arabic}</span>`;
+                        html += `</div>`;
+                        html += `<div class="prayer-details">`;
+                        html += `<span class="badge">&#x1F552; ${item.time}</span>`;
+                        html += `<span class="badge">&#x1F4FF; ${item.rakaat}</span>`;
+                        html += `</div>`;
+                        html += `<p>${item.description}</p>`;
+                        html += `</div>`;
+                    });
+                }
+
+                else if (section.type === 'quran') {
+                    section.items.forEach(item => {
+                        html += `<div class="card quran-card">`;
+                        html += `<div class="card-header">`;
+                        html += `<strong>&#x1F4D6; Surah ${item.surah}</strong> <span class="verse-num">[${item.number}]</span>`;
+                        html += `</div>`;
+                        html += `<blockquote>"${item.text}"</blockquote>`;
+                        html += `</div>`;
+                    });
+                }
+
+                else if (section.type === 'hadith') {
+                    section.items.forEach(item => {
+                        html += `<div class="card hadith-card">`;
+                        html += `<div class="card-header">`;
+                        html += `<strong>&#x1F4DC; ${item.narrator}</strong>`;
+                        html += `</div>`;
+                        html += `<blockquote>"${item.text}"</blockquote>`;
+                        html += `</div>`;
+                    });
+                }
+
+                else if (section.type === 'duas') {
+                    section.items.forEach(item => {
+                        html += `<div class="card dua-card">`;
+                        html += `<div class="card-header"><strong>${item.occasion}</strong></div>`;
+                        html += `<p class="dua-arabic">${item.arabic}</p>`;
+                        html += `<p class="dua-translit"><em>${item.transliteration}</em></p>`;
+                        html += `<p class="dua-meaning">${item.meaning}</p>`;
+                        html += `</div>`;
+                    });
+                }
+
+                else if (section.type === 'prophets') {
+                    html += `<div class="card"><div class="prophets-list">`;
+                    section.items.forEach((name, i) => {
+                        html += `<span class="prophet-name">${i + 1}. ${name}</span>`;
+                    });
+                    html += `</div></div>`;
+                }
+
+                else if (section.type === 'months') {
+                    html += `<div class="card"><div class="months-list">`;
+                    section.items.forEach((name, i) => {
+                        html += `<span class="month-name">${i + 1}. ${name}</span>`;
+                    });
+                    html += `</div></div>`;
+                }
+
+                else if (section.type === 'theme') {
+                    section.items.forEach(group => {
+                        if (group.type === 'quran') {
+                            group.data.forEach(item => {
+                                html += `<div class="card quran-card">`;
+                                html += `<div class="card-header"><strong>&#x1F4D6; Surah ${item.surah}</strong> <span class="verse-num">[${item.number}]</span></div>`;
+                                html += `<blockquote>"${item.text}"</blockquote>`;
+                                html += `</div>`;
+                            });
+                        }
+                        if (group.type === 'hadith') {
+                            group.data.forEach(item => {
+                                html += `<div class="card hadith-card">`;
+                                html += `<div class="card-header"><strong>&#x1F4DC; ${item.narrator}</strong></div>`;
+                                html += `<blockquote>"${item.text}"</blockquote>`;
+                                html += `</div>`;
+                            });
+                        }
+                    });
+                }
+
+                html += `</div>`;
+            });
+
+            results.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
