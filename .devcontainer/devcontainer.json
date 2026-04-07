@@ -1,0 +1,5 @@
+{
+  "postCreateCommand": "pip install flask",
+  "forwardPorts": [5000],
+  "postStartCommand": "python3 web_app.py"
+}
