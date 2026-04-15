@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+trading_bot/config_keys.py
+*.log
+trade_history.json
