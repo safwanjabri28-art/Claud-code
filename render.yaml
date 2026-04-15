@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: okx-halal-trading-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn trading_app:app --bind 0.0.0.0:$PORT --workers 2 --threads 2
+    envVars:
+      - key: OKX_API_KEY
+        sync: false
+      - key: OKX_SECRET_KEY
+        sync: false
+      - key: OKX_PASSPHRASE
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.0
