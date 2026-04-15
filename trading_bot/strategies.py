@@ -9,7 +9,10 @@ All strategies are SPOT ONLY -- Sharia compliant.
 
 import pandas as pd
 
-from indicators import compute_all_indicators, support_resistance, volume_profile
+try:
+    from trading_bot.indicators import compute_all_indicators, support_resistance, volume_profile
+except ImportError:
+    from indicators import compute_all_indicators, support_resistance, volume_profile
 
 
 class Signal:
