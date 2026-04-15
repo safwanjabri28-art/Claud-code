@@ -8,9 +8,16 @@ No leverage, no futures, no interest -- Sharia compliant.
 # ─── OKX API CREDENTIALS ───────────────────────────────────────────
 # Generate at: OKX > Profile > API > Create API Key
 # Permissions needed: Read + Trade (do NOT enable Withdraw)
-OKX_API_KEY = ""
-OKX_SECRET_KEY = ""
-OKX_PASSPHRASE = ""
+# Load keys from gitignored file (never committed)
+try:
+    from trading_bot.config_keys import OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
+except ImportError:
+    try:
+        from config_keys import OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
+    except ImportError:
+        OKX_API_KEY = ""
+        OKX_SECRET_KEY = ""
+        OKX_PASSPHRASE = ""
 
 # Set to True for paper trading (HIGHLY recommended to test first)
 USE_DEMO = True
